@@ -5,7 +5,6 @@ const cors = require('cors');
 const csurf = require('csurf');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
-
 const {environment} = require('./config');
 const isProduction = environment === 'production';
 
@@ -16,23 +15,29 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.json());
 
-if(!isProduction) {
+// Security Middleware
+if (!isProduction) {
+    // enable cors only in development
     app.use(cors());
-}
+  }
 
-app.use(helmet.crossOriginResourcePolicy(
-    {policy: 'cross-origin'}
-));
-
+// helmet helps set a variety of headers to better secure your app
 app.use(
-    csurf({
-        cookie: {
-            secure: isProduction,
-            sameSite: isProduction && 'Lax',
-            httpOnly: true
-        }
+    helmet.crossOriginResourcePolicy({ 
+      policy: "cross-origin" 
     })
-);
+  );
+  
+  // Set the _csrf token and create req.csrfToken method
+  app.use(
+    csurf({
+      cookie: {
+        secure: isProduction,
+        sameSite: isProduction && "Lax",
+        httpOnly: true
+      }
+    })
+  );
 
 const routes = require('./routes');
 
